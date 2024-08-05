@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <header class="head">
+                <div class="nav">
+                    <div class="logo">
+                        <a href=""><img src="{% static 'img/twitter-x-logo-white.svg' %}" alt=""></a>
+                    </div>
+                    <nav class="paths">
+                        <a href="">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Home</p></div>
+                            </div>
+                        </a>
+                        <a href="">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Explore</p></div>
+                            </div>
+                        </a>
+                        <a href="">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Message</p></div>
+                            </div>
+                        </a>
+                        <a href="">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Communities</p></div>
+                            </div>
+                        </a>
+                        <a href="">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Profile</p></div>
+                            </div>
+                        </a>
+                    </nav>
+                    <div class="post-create">
+                        <button id="open-modal">
+                            <img src="{% static 'img/create-note-svgrepo-com (2).svg' %}" alt="">
+                        </button>
+                    </div>
+                    <div class="profile-container">
+                        <div class="profile">
+                            <div class="picture"></div>
+                            <div class="name-nickname">
+                                <div class="name">
+                                    <h4>HuyDildo</h4>
+                                </div>
+                                <div class="nickname">
+                                    <p>@dildak</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="modal" id="modal">
+                <div class="modal-container">
+                    <div class="modal-container-flex">
+                        <div class="start-modal">
+                            <img class="close-modal" src="{% static 'img/x-symbol-svgrepo-com.svg' %}" alt="">
+                        </div>
+                        <div class="flex-create-post-modal">
+                            <div class="post-name-create">
+                                <div class="picture-post-create">
+                                    <img src="{% static 'img/photo_2023-09-04_21-36-47.jpg' %}" alt="">
+                                </div>
+                                <input type="text" placeholder="Что нового?!">
+                            </div>
+                            <hr>
+                            <div class="button-post-detail-modal">
+                                <div class="Media">
+                                    <button><img src="{% static 'img/picture-svgrepo-com.svg' %}" alt=""></button>
+                                    <button><img src="{% static 'img/picture-svgrepo-com.svg' %}" alt=""></button>
+                                    <button><img src="{% static 'img/picture-svgrepo-com.svg' %}" alt=""></button>
+                                    <div class="post-path">
+                                        <button><b>Опубликовать пост</b></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% block content %}
+    
+            {% endblock %}
+              
+        </div>
+    </div>
+
+
+</body>
+</html>

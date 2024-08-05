@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+Сообщения
+{% endblock title %}
+
+{% block content %}
+
+<main class="content-messages">
+  <div class="messages">
+    <div class="message-flex">
+      <h4>Messages</h4>
+      <img src="./assets/img/chat-new-svgrepo-com.svg" alt="">
+    </div>
+  </div>
+  <div class="search">
+    <form action="" aria-label="search">
+      <img src="./assets/img/search-svgrepo-com.svg" alt="">
+      <input type="text" placeholder="Search">
+    </form>
+  </div>
+  <div class="chat">
+    <div class="chat-flex">
+      <img src="./assets/img/df4bbf977e6a4fb806900dd070a06166.jpg" alt="">
+      <div class="chat-info">
+        <div class="user-name">
+          <p><b>Eva Elfie</b></p>
+          <p class="p">@EvaElfie</p>
+        </div>
+        <div class="last-message">
+          <p>Я ему сосала дрочила, он мне..</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chat">
+    <div class="chat-flex">
+      <img src="./assets/img/df4bbf977e6a4fb806900dd070a06166.jpg" alt="">
+      <div class="chat-info">
+        <div class="user-name">
+          <p><b>Eva Elfie</b></p>
+          <p class="p">@EvaElfie</p>
+        </div>
+        <div class="last-message">
+          <p>Я ему сосала дрочила, он мне..</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="trending-messages">
+  <div class="name-account">
+    <div class="name-account-flex">
+      <a href="">
+        <img src="./assets/img/df4bbf977e6a4fb806900dd070a06166.jpg" alt="">
+      </a>
+      <p><b>Eva Elfie</b></p>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/script.js' %}"></script>
+{% endblock content %}
