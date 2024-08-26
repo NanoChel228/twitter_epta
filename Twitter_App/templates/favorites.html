@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Избранное
+{% endblock %}
+
+{% block content %}
+<div class="favorites_post">
+  <h1>Избранные посты</h1>
+  
+  {% for favorite in favorites %}
+    <div><a href="{% url 'post_detail' favorite.post.slug %}">{{ favorite.post }}</a></div>
+  {% empty %}
+    <div>У вас нет избранных постов.</div>
+  {% endfor %}
+</div>
+
+<div class="trending">
+    <div class="search">
+      <form action="" aria-label="search">
+        <img src="{% static 'img/search-svgrepo-com.svg' %}" alt="">
+        <input type="text" placeholder="Search">
+      </form>
+    </div>
+    <div class="trends">
+      <div class="trends-me">
+        <div class="trends-text">
+          <h2>Trends for you</h2>
+          <div class="trend-post">
+            <a href="">
+              <p>Trending in USA</p>
+              <p><b>USA</b></p>
+              <p>10K posts</p>
+            </a>
+          </div>
+          <div class="show-more">
+            <a href="">
+              <p>Show more</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="follow-back">
+      <div class="follow">
+        <div class="follow-text">
+          <h2>Who to follow</h2>
+          <div class="profile-follow">
+            <div class="picture-follow"></div>
+            <div class="name-nickname-follow">
+              <div class="name-follow">
+                <h4>HuyDildo</h4>
+              </div>
+              <div class="nickname-follow">
+                <p>@dildak</p>
+              </div>
+            </div>
+            <div class="button-follow">
+              <button><a href=""><p><b>Follow</b></p></a></button>
+            </div>
+          </div>
+          <div class="profile-follow">
+            <div class="picture-follow"></div>
+            <div class="name-nickname-follow">
+              <div class="name-follow">
+                <h4>HuyDildo</h4>
+              </div>
+              <div class="nickname-follow">
+                <p>@dildak</p>
+              </div>
+            </div>
+            <div class="button-follow">
+              <button><a href=""><p><b>Follow</b></p></a></button>
+            </div>
+          </div>
+          <div class="profile-follow">
+            <div class="picture-follow"></div>
+            <div class="name-nickname-follow">
+              <div class="name-follow">
+                <h4>HuyDildo</h4>
+              </div>
+              <div class="nickname-follow">
+                <p>@dildak</p>
+              </div>
+            </div>
+            <div class="button-follow">
+              <button><a href=""><p><b>Follow</b></p></a></button>
+            </div>
+          </div>
+          <div class="profile-follow">
+            <div class="picture-follow"></div>
+            <div class="name-nickname-follow">
+              <div class="name-follow">
+                <h4>HuyDildo</h4>
+              </div>
+              <div class="nickname-follow">
+                <p>@dildak</p>
+              </div>
+            </div>
+            <div class="button-follow">
+              <button><a href=""><p><b>Follow</b></p></a></button>
+            </div>
+          </div>
+          <div class="profile-follow">
+            <div class="picture-follow"></div>
+            <div class="name-nickname-follow">
+              <div class="name-follow">
+                <h4>HuyDildo</h4>
+              </div>
+              <div class="nickname-follow">
+                <p>@dildak</p>
+              </div>
+            </div>
+            <div class="button-follow">
+              <button><a href=""><p><b>Follow</b></p></a></button>
+            </div>
+          </div>
+          <div class="show-more-follow">
+            <a href="">
+              <p>Show more</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  
+{% endblock %}

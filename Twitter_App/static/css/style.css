@@ -85,8 +85,7 @@ a{
   padding: 10px;
 }
 
-.picture{
-  background: url(../img/photo_2023-09-04_21-36-47.jpg);
+.picture img{
   width: 50px;
   height: 50px;
   border-radius: 100%;
@@ -106,19 +105,23 @@ a{
   height: 100%;
 }
 
-.picture-post-create img{
-  width: 50px;
-  height: 50px;
-  border-radius: 100%;
+.picture-post-create{
+  display: flex;
+  align-items: center;
 }
 
 .post-name-create{
-  display: flex;
-  align-items: center;
   padding: 20px;
+  width: 100%;
+  display: flex;
+  color: white;
 }
 
-.post-name-create input{
+.post-name-create form{
+  width: 95%;
+}
+
+/* .post-name-create textarea{
   width: 90%;
   height: 40px;
   background: none;
@@ -127,12 +130,8 @@ a{
   border: none;
   color: white;
   margin-left: 10px;
-}
-
-.post-name-create input:hover{
-  border-bottom: 1px solid rgb(75, 75, 75);
-  
-}
+  overflow-y: auto; 
+} */
 
 .button-post-detail{
   width: 100%;
@@ -188,6 +187,8 @@ img {
 .avator {
   border-radius:100px;
   width:48px;
+  height: 48px;
+  object-fit: cover;
   margin-right: 15px;
 }
 
@@ -431,12 +432,15 @@ img {
   width: 100%;
 }
 
-.picture-follow{
-  background: url(../img/photo_2023-09-04_21-36-47.jpg);
+.profile-follow-flex img{
+  object-fit: cover;
+  border-radius: 50px;
   width: 50px;
   height: 50px;
-  border-radius: 100%;
+}
 
+.profile-follow-flex{
+  display: flex;
 }
 
 .name-nickname-follow{
@@ -451,7 +455,7 @@ img {
   width: 100%;
 }
 
-.button-follow p{
+.button-follow a{
   color: black;
 }
 
@@ -512,6 +516,7 @@ img {
 }
 
 .content-messages{
+  color: white;
   border-right: 1px solid rgb(75, 75, 75);
   border-left: 1px solid rgb(75, 75, 75);
   width: 25%;
@@ -542,7 +547,6 @@ img {
   color: white;
   width: 100%;
   display: flex;
-  justify-content: center;
   border-bottom: 1px solid rgb(75, 75, 75);
 }
 
@@ -568,7 +572,7 @@ img {
 
 .category-flex{
   display: flex;
-  justify-content: space-between;
+  margin-left: 10px;
   width: 100%;
 }
 
@@ -617,7 +621,7 @@ img {
 
 .profile-header{
   width: 100%;
-  height: 10%;
+  height: 30%;
 }
 
 .prof-header{
@@ -628,7 +632,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-
+  background: rgb(69, 62, 80);
 }
 
 .ava{
@@ -649,6 +653,9 @@ img {
 .ava-absolut{
   margin-bottom: 6%;
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ava-absolut img{
@@ -736,18 +743,14 @@ img {
 }
 
 .trending-messages{
+  color: white;
   width: 35%;
   height: 100vh;
   border-right: 1px solid rgb(75, 75, 75);
 }
 
 .messages{
-  width: 100%;
-  height: 5%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  padding: 10px 0;
 }
 
 .message-flex{
@@ -852,7 +855,7 @@ img {
 
 .flex-create-post-modal{
   width: 100%;
-  
+  height: 100%;
 }
 
 .modal-container-flex{
@@ -904,11 +907,6 @@ img {
 }
 
 
-
-.flex-create-post-modal{
-  width: 100%;
-  height: 100%;
-}
 
 .modal-container-flex{
   width: 100%;
@@ -966,17 +964,20 @@ img {
   display: flex;
   align-items: center;
   padding: 20px;
+  width: 100%;
 }
 
-.post-name-create input{
-  width: 90%;
-  height: 40px;
+.post-name-create textarea{
+  width: 100%;
   background: none;
   outline: none;
   font-size: 25px;
   border: none;
   color: white;
   margin-left: 10px;
+  resize: vertical; 
+  overflow-y: auto; 
+  height: auto;
 }
 
 .start-modal img{
@@ -1031,21 +1032,31 @@ img {
 
 .profile-header-modal{
   width: 100%;
-  height: 40%;
+  height: 10%;
   margin-top: 10px;
 
-  background: red;
+}
+
+.profile-header-modal img{
+  width: 100%;
+  height: 100%;
+
 }
 
 .prof-header-modal{
   height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .prof-header-modal img{
   width: 100%;
-  height: 100%;
+  height: 300px;
+  background: rgb(69, 62, 80);
   object-fit: cover;
-
+  display: flex;
 }
 
 .ava{
@@ -1124,7 +1135,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 20px 0;
+  margin: 60px 0 0 0 ;
 }
 
 .name-edit-flex{
@@ -1309,4 +1320,129 @@ form .text h3 a{
 }
 form .text h3 a:hover{
   text-decoration: underline;
+}
+
+.post_detail-flex{
+  width: 90%;
+  display: flex;
+  align-items: center;
+}
+
+.post_detail-flex a{
+  margin: 0 10px;
+}
+
+.post_detail-flex h4{
+  margin: 0 20px;
+}
+
+.communities-post_detail{
+  color: white;
+  width: 100%;
+  display: flex;
+}
+
+.communities-post_detail img{
+  width: 20px;
+  height: 20px;
+}
+
+.single_comment{
+  color: white;
+}
+
+.text-center{
+  color: white;
+}
+
+.check{
+  color: white;
+}
+
+.tag_or_post{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 0 0;
+}
+
+.explore_result {
+  color: white;
+}
+
+.favorites_post{
+  width: 50%;
+  color: white;
+  border-right: 1px solid rgb(75, 75, 75);
+  border-left: 1px solid rgb(75, 75, 75);
+
+
+}
+
+.upload-header-image{
+  position: absolute;
+  overflow: hidden;
+  display: inline-block;
+
+}
+
+.upload-avatar{
+  position: absolute;
+}
+
+.avatar{
+  height: 50px;
+  width: 50px;
+  border-radius: 50px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.like-button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #eee;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.like-button.liked {
+  background-color: red;
+  color: white;
+}
+
+.likes {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.feather-heart {
+  transition: fill 0.3s, stroke 0.3s;
+}
+.liked .feather-heart {
+  fill: red;
+  stroke: red;
+}
+.likes-count {
+  margin-left: 8px;
+  color: white;
+  font-size: 14px;
+}
+
+.like-button{
+  background: none;
+  height: 0px;
+  width: 0px;
+}
+
+
+
+.chat-container{
+  color: white;
+}
+
+.message{
+  margin: 10px 0;
+}
+.input_invisble {
+  display: none;
 }

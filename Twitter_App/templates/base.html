@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %} {% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
 </head>
 <body>
     <div class="container">
@@ -14,10 +13,10 @@
             <header class="head">
                 <div class="nav">
                     <div class="logo">
-                        <a href=""><img src="{% static 'img/twitter-x-logo-white.svg' %}" alt=""></a>
+                        <a href="{% url 'home' %}"><img src="{% static 'img/twitter-x-logo-white.svg' %}" alt=""></a>
                     </div>
                     <nav class="paths">
-                        <a href="">
+                        <a href="{% url 'home' %}">
                             <div class="path">
                                 <div class="path-svg">
                                     <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
@@ -25,7 +24,7 @@
                                 <div class="path-txt"><p>Home</p></div>
                             </div>
                         </a>
-                        <a href="">
+                        <a href="{% url 'explore' %}">
                             <div class="path">
                                 <div class="path-svg">
                                     <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
@@ -33,15 +32,15 @@
                                 <div class="path-txt"><p>Explore</p></div>
                             </div>
                         </a>
-                        <a href="">
+                        <a href="{% url 'chat_list' %}">
                             <div class="path">
                                 <div class="path-svg">
                                     <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
                                 </div>
-                                <div class="path-txt"><p>Message</p></div>
+                                <div class="path-txt"><p>Chat</p></div>
                             </div>
                         </a>
-                        <a href="">
+                        <a href="{% url 'communities' %}">
                             <div class="path">
                                 <div class="path-svg">
                                     <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
@@ -49,7 +48,15 @@
                                 <div class="path-txt"><p>Communities</p></div>
                             </div>
                         </a>
-                        <a href="">
+                        <a href="{% url 'favorite_posts' %}">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Favorite</p></div>
+                            </div>
+                        </a>
+                        <a href="{% url 'profile_url' request.user.username  %}">
                             <div class="path">
                                 <div class="path-svg">
                                     <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
@@ -57,32 +64,46 @@
                                 <div class="path-txt"><p>Profile</p></div>
                             </div>
                         </a>
+                        <a href="{% url 'logout_user' %}">
+                            <div class="path">
+                                <div class="path-svg">
+                                    <img src="{% static 'img/home-svgrepo-com (1).svg' %}" alt="">
+                                </div>
+                                <div class="path-txt"><p>Log Out</p></div>
+                            </div>
+                        </a>
                     </nav>
                     <div class="post-create">
-                        <button id="open-modal">
+                        <button id="open-modal" data-modal="modal1">
                             <img src="{% static 'img/create-note-svgrepo-com (2).svg' %}" alt="">
                         </button>
                     </div>
                     <div class="profile-container">
                         <div class="profile">
-                            <div class="picture"></div>
+                            <div class="picture">
+                                {% if author.image %}
+                                    <img src="{{ author.image.url }}" alt="">
+                                {% else %}
+                                    <img src="/media/profile_images/default.webp" alt="Default Avatar">
+                                {% endif %}
+                            </div>  
                             <div class="name-nickname">
                                 <div class="name">
-                                    <h4>HuyDildo</h4>
+                                    <h4>{{ user.username }}</h4>
                                 </div>
                                 <div class="nickname">
-                                    <p>@dildak</p>
+                                    <p>@{{ user.username }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
-            <div class="modal" id="modal">
+            <div class="modal" id="modal1">
                 <div class="modal-container">
                     <div class="modal-container-flex">
                         <div class="start-modal">
-                            <img class="close-modal" src="{% static 'img/x-symbol-svgrepo-com.svg' %}" alt="">
+                            <img class="close-modal" data-modal="modal1" src="{% static 'img/x-symbol-svgrepo-com.svg' %}" alt="">
                         </div>
                         <div class="flex-create-post-modal">
                             <div class="post-name-create">
@@ -107,13 +128,155 @@
                 </div>
             </div>
 
+            <<div class="modal" id="modal">
+                <div class="modal-container-edit">
+                    <div class="modal-container-flex">
+                        <form method="post" action="{% url 'update_profile' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="start-modal-edit">
+                                <div class="start-modal-flex">
+                                    <img class="close-modal" src="{% static 'path/to/close-icon.svg' %}" alt="Close" onclick="close_modal()">
+                                    <h4>Edit profile</h4>
+                                    <button type="submit"><b>Save</b></button>
+                                </div>
+                            </div>
+            
+                            <div class="flex-create-post-modal">
+                                <div class="profile-header-modal">
+                                    <div class="prof-header-modal">
+                                        {% if image_header_profile %}
+                                        <label for="input_invisble" class="prof-header-modal">
+                                            <img src="{{ image_header_profile.url }}" alt="Header Image" id="imageUrlChange">
+                                        </label>
+                                        {% else %}
+                                        <label for="input_invisble" class="prof-header-modal">
+                                            <img src="/media/default_header_image.jpg" alt="" id="imageUrlChange">
+                                        </label>
+                                        {% endif %}
+                                        <input id="input_invisble" type="file" name="image_header" accept="image/*" id="fileInput" class="input_invisble" onchange="update_input_image(event, 'imageUrlChange')">
+                                    </div>
+                                </div>
+            
+                                <div class="ava">
+                                    <div class="ava-flex">
+                                        <div class="ava-absolut">
+                                            {% if user.profile.image %}
+                                                <label for="image_image">
+                                                    <img src="{{ user.profile.image.url }}" alt="" id="image_profile_change">
+                                                </label>
+                                            {% else %}
+                                                <label for="image_image">
+                                                    <img src="/media/profile_images/default.webp" alt="" id="image_profile_change">
+                                                </label>
+                                            {% endif %}
+                                            <label for="image_image"></label>
+                                            <input class="input_invisble" type="file" name="image" accept="image/*" id="image_image" onchange="update_input_image(event, 'image_profile_change')">
+
+                                        </div>
+                                    </div>
+                                </div>
+            
+                                <div class="name-edit">
+                                    <div class="name-edit-flex">
+                                        <input type="text" name="username" value="{{ user.username }}" placeholder="Name" maxlength="10">
+                                    </div>
+                                </div>
+            
+                                <div class="bio">
+                                    <div class="bio-flex">
+                                        <textarea name="bio" maxlength="160" placeholder="Bio">{{ user.profile.content }}</textarea>
+                                    </div>
+                                </div>
+            
+                                <div class="birthday">
+                                    <div class="birthday-flex">
+                                        <input type="date" name="birthday" value="{{ user.profile.birthday|date:'Y-m-d' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+              
+
             {% block content %}
     
             {% endblock %}
               
         </div>
     </div>
-
-
+    <script src="{% static 'js/script.js' %}"></script>
+    
+    <script>
+        window.onload = function() {
+            document.getElementById('fileInput').value = "";
+        }
+    </script>
+    <script>
+        function update_input_image(e, id) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    const base64String = event.target.result;
+                    const imagePreview = document.getElementById(id);
+                    
+                    if (imagePreview) {
+                        imagePreview.src = base64String; 
+                    }
+                    
+                    console.log(base64String); 
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                console.log('No file selected');
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          document.querySelectorAll('.like-form').forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+              event.preventDefault(); // Предотвращаем стандартное поведение формы
+        
+              const formData = new FormData(form);
+              const url = form.action;
+        
+              fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+              })
+              .then(response => response.json())
+              .then(data => {
+                // Обновите количество лайков на странице
+                const likeCountElement = form.querySelector('.likes-count');
+                likeCountElement.textContent = data.likes_count;
+        
+                // Обновите состояние лайка
+                const likeButton = form.querySelector('.like-button');
+                const likeIcon = likeButton.querySelector('svg');
+                const likeSpan = likeButton.querySelector('span');
+        
+                if (data.liked) {
+                  likeSpan.textContent = 'Unlike';
+                  likeIcon.classList.add('liked'); // Добавить класс liked
+                  likeIcon.setAttribute('fill', '#FF0000'); // Красный цвет для лайка
+                } else {
+                  likeSpan.textContent = 'Like';
+                  likeIcon.classList.remove('liked'); // Удалить класс liked
+                  likeIcon.setAttribute('fill', 'none'); // Цвет по умолчанию для не лайка
+                }
+              })
+              .catch(error => console.error('Ошибка:', error));
+            });
+          });
+        });
+      </script>
 </body>
 </html>

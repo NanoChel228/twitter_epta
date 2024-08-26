@@ -4,14 +4,102 @@
 Поиск
 {% endblock %}
 
-{% block  content %}
+{% block content %}
 <main class="content-post">
   <div class="create-post">
     <div class="search-post">
-      <form action="" aria-label="search">
+      <form action="{% url 'explore' %}" aria-label="search">
         <img src="./assets/img/search-svgrepo-com.svg" alt="">
-        <input type="text" placeholder="Search">
+        <input type="text" placeholder="Search" name="query" value="{{ query }}">
       </form>
+    </div>
+    <hr>
+    <div class="explore_result">
+      {% if posts %}
+          <h2>Результаты поиска:</h2>
+          {% for post in posts %}
+            {% if post.slug %}
+            <a href="{{post.get_link}}">
+              <div class="tweet-wrap">
+                <div class="tweet-header">
+                  <img src="{{ post.author.image.url }}" alt="" class="avator">
+                  <div class="tweet-header-info">
+                    {{ post.author }} <span>@{{post.author}}</span><span> {{post.created_at|date:'d-F-Y'}}
+                    {% if post.tag %}
+                      <p>#{{ post.tag.name }}</p>
+                    {% endif %}
+              </span>
+                    <p>{{post.content}}</p>
+                    
+                  </div>
+                  
+                </div>
+                <div class="tweet-img-wrap">
+                  {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post Image">
+                  {% endif %}
+                </div>
+                <div class="tweet-info-counts">
+                  
+                  <div class="comments">
+                  
+                    <svg class="feather feather-message-circle sc-dnqmqq jxshSx" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    <div class="comment-count">{{ post.comments_count }}</div>
+                  </div>
+                  
+                  <!-- Лайки -->
+                  <form method="post" action="{% url 'like_post' post.slug %}" class="like-form">
+                    {% csrf_token %}
+                    <div class="likes" data-post-slug="{{ post.slug }}">
+                      <button type="submit" class="like-button">
+                        {% if request.user.profile in post.likes.all %}
+                          <svg id="like-icon-{{ post.slug }}" class="feather feather-heart liked" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#FF0000" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                          </svg>
+                          <span>Unlike</span>
+                        {% else %}
+                          <svg id="like-icon-{{ post.slug }}" class="feather feather-heart" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                          </svg>
+                          <span>Like</span>
+                        {% endif %}
+                      </button>
+                      <div id="likes-count-{{ post.slug }}" class="likes-count">
+                        {{ post.likes.count }}
+                      </div>
+                    </div>
+                  </form>
+                  
+                  
+                  <div class="message">
+                    <svg class="feather feather-send sc-dnqmqq jxshSx" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <div class="likes-count">
+                      {{ post.views }}
+                    </div>
+                  </div>
+                  
+                  <form method="post" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="post_slug" value="{{ post.slug }}">
+                    {% if post.id in favorite_posts %}
+                        <button type="submit" name="favorite">Удалить из избранного</button>
+                    {% else %}
+                        <button type="submit" name="favorite">Добавить в избранное</button>
+                    {% endif %}
+                  </form>
+      
+                  
+                </div>
+              </div>
+            </a>
+      
+            {% else %}
+      
+            <p>Post slug is missing</p>
+      
+            {% endif %}
+        {% endfor %}
+      {% endif %}
     </div>
     <hr>
     <div class="trends-explore">
@@ -112,5 +200,7 @@
     </div>
   </div>
 </div>
-<script src="{% static 'js/script.js' %}"></script>
+
+
+
 {% endblock %}

@@ -13,27 +13,24 @@
   <div class="wrapper">
     <h2>Вход</h2>
     <form action="{% url 'login' %}" method="POST">
-        {% if message != null %}
-        <div class="alert alert-danger">
-            {{message}}
-        </div>
-        {% endif %}
-        {% csrf_token %}
-        <div class="input-box">
-            <input type="text" name="name" placeholder="Enter your name" required>
-        </div>
-        <div class="input-box">
-            <input type="text" name="email" placeholder="Enter your email" required>
-        </div>
-        <div class="input-box">
-            <input type="password" placeholder="your password" required>
-        </div>
-        <div class="input-box button">
-            <input type="Submit" value="Войти">
-        </div>
-        <div class="text">
-            <h3>Нету аккаунта? <a href="{% url 'register' %}">Зарегестрироваться</a></h3>
-        </div>
+      {% if message %}
+      <div class="alert alert-danger">
+          {{ message }}
+      </div>
+      {% endif %}
+      {% csrf_token %}
+      <div class="input-box">
+          <input type="text" name="username_or_email" placeholder="Enter your login or email" required>
+      </div>
+      <div class="input-box">
+          <input type="password" name="password" placeholder="Your password" required>
+      </div>
+      <div class="input-box button">
+          <input type="submit" value="Войти">
+      </div>
+      <div class="text">
+          <h3>Нету аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></h3>
+      </div>
     </form>
   </div>
 </body>

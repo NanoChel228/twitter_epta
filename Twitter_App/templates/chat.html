@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Сообщения
+{% endblock title %}
+
+{% block content %}
+<div class="chat-container">
+  <!-- Левая панель: список чатов -->
+  <div class="chat-list">
+      <h2>Chats</h2>
+      <ul>
+          {% for chat in chats %}
+              <li>
+                  <a href="?chat_id={{ chat.id }}">
+                      Chat with 
+                      {% for profile in chat.profiles.all %}
+                          {% if profile != request.user.profile %}
+                              {{ profile.user.username }}
+                          {% endif %}
+                      {% endfor %}
+                  </a>
+              </li>
+          {% empty %}
+              <li>No chats available</li>
+          {% endfor %}
+      </ul>
+
+      <!-- Форма для создания нового чата -->
+      <form method="POST" action="{% url 'create_chat' %}">
+          {% csrf_token %}
+          <input type="text" name="recipient_username" placeholder="Enter username to chat with" required>
+          <button type="submit">Create Chat</button>
+      </form>
+  </div>
+
+  <!-- Правая панель: содержимое чата -->
+  <div class="chat-content">
+      {% if selected_chat %}
+          <h3>Chat with {{ other_profile_username }}</h3>
+          
+          <!-- Отображение сообщений -->
+          <div class="messages">
+              {% for message in messages %}
+                  <div class="message {% if message.sender == request.user.profile %}sent{% else %}received{% endif %}">
+                        <h2>{{ message.sender.user.username }}</h2>
+                        <p>{{ message.text }}</p>
+                        <span>{{ message.created_at }}</span>
+                  </div>
+              {% endfor %}
+          </div>
+
+          <!-- Форма отправки сообщения -->
+          <form method="POST" action="{% url 'send_message' selected_chat.id %}">
+              {% csrf_token %}
+              <input type="text" name="text" placeholder="Enter your message..." required>
+              <button type="submit">Send</button>
+          </form>
+      {% else %}
+          <p>Select a chat to start messaging</p>
+      {% endif %}
+  </div>
+</div>
+
+
+
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

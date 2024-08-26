@@ -1,15 +1,25 @@
-const modal = document.getElementById('modal');
-const btn = document.getElementById('open-modal');
-const img = document.getElementsByClassName('close-modal')[0];
+const openButtons = document.querySelectorAll('[id^="open-modal"]');
+const closeButtons = document.querySelectorAll('.close-modal');
 
-btn.onclick = function(){
-    modal.style.display = "flex";
-}
-img.onclick = function(){
-    modal.style.display = "none";
-}
-window.onclick = function(event){
-    if (event.target === modal) {
-        modal.style.display = "none";
+openButtons.forEach(button => {
+    button.onclick = function() {
+        const modalId = button.getAttribute('data-modal');
+        document.getElementById(modalId).style.display = "flex";
+    }
+});
+
+closeButtons.forEach(button => {
+    button.onclick = function() {
+        const modalId = button.getAttribute('data-modal');
+        document.getElementById(modalId).style.display = "none";
+    }
+});
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
     }
 };
+function update_input_image(e){
+    console.log(e.files[0]);
+}
