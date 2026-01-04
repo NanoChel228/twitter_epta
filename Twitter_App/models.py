@@ -69,7 +69,7 @@ class Profile(models.Model) :
     image = models.ImageField('Аватарка', upload_to='profile_images/', blank=True, null=True, default='profile_images/default.webp')
     image_header = models.ImageField('Хедер', upload_to='profile_image/', blank=True, null=True)
     created_at = models.DateTimeField('Дата создания профиля', default=timezone.now)
-    subscriptions = models.ManyToManyField('self', symmetrical=False, related_name='subscribers')    
+    subscriptions = models.ManyToManyField('self', symmetrical=False, related_name='subscribed_by', blank=True)
     
     def __str__(self):
         return f"{self.user.username}"
@@ -80,6 +80,14 @@ class Profile(models.Model) :
         
     def total_post_views(self):
         return self.posts.aggregate(total_views=Sum('views'))['total_views'] or 0
+    
+    @property
+    def follower_count(self):
+        return self.subscribed_by.count()
+
+    @property
+    def following_count(self):
+        return self.subscriptions.count()
 
 
 class Comment(models.Model):
@@ -126,3 +134,13 @@ class Message(models.Model):
         return f"Message from {self.sender.user.username} to {self.recipient.user.username}"
     
     
+class PostRequest(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    requester = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('post', 'requester')
+
+    def __str__(self):
+        return f'{self.requester.username} requested {self.post.content}'

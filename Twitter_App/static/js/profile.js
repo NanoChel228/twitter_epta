@@ -20,3 +20,8 @@ function model_open_profile(){
     console.log('hello');
     modal.style.display = 'flex';
 }
+
+function hello(profile, user){
+    console.log(profile);
+    
+}

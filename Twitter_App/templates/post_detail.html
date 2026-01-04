@@ -27,6 +27,9 @@
         {% endif %}
         <div class="tweet-header-info">
           {{post.author}} <span>@{{post.author}}</span><span>. {{post.created_at|date:'d-F-Y'}}
+          {% if post.tag %}
+            <p>#{{ post.tag.name }}</p>
+          {% endif %}
     </span>
           <p>{{post.content}}</p>
           
@@ -76,8 +79,10 @@
         </div>
 
         {% if request.user == post.author.user %}
+        <div class="Edit_Delete">
           <a href="{% url 'edit_post' post.slug %}">Edit</a>
           <a href="{% url 'delete_post' post.slug %}">Delete</a>
+        </div>
         {% endif %}
       </div>
     </div>
@@ -88,47 +93,89 @@
         Если у вас нет аккаунта то <a href="{% url 'register' %}">Зарегистрируйтесь</a>
         </p>
       {% else %}
-        <form action="{% url 'comment' slug=post.slug %}" method="post">
+        <form action="{% url 'comment' slug=post.slug %}" method="post" class="fields-comment">
           {% csrf_token %}
-          <textarea name="comment" required maxlength="180"></textarea>
-          <button type="submit">Добавить комментарий</button>
+          <textarea name="comment" required maxlength="280"></textarea>
+          <div class="btn_sub">
+            <button type="submit">Добавить комментарий</button>
+          </div>
         </form>
       {% endif %}
       <hr>
       {% for comment in post.comments.all %}
-      <div class="single_comment">
-        <h2>{{comment.author.user.username}}</h2>
-        <p>{{comment.text}}</p>
-        <p class="text-end">{{comment.created_at|timesince}} назад</p>
-        <hr>
+      <div class="comment_full">
+        <img src="{{ comment.author.image.url }}" alt="">
+        <div class="single_comment">
+          <h2>{{comment.author.user.username}}</h2>
+          <p class="text-end-text">{{comment.text}}</p>
+          <p class="text-end">{{comment.created_at|timesince}} назад</p>
+        </div>
       </div>
       {% empty %}
-      <p class="text-center">Комментариев нет</p>
+      <div class="text-center">
+        <p class="text-center">Комментариев нет</p>
+      </div>
       {% endfor %}
     </div>
   </div>
 </main>
 
 <div class="trending">
-    <div class="search">
-      <form action="" aria-label="search">
+  <div class="search">
+    <form method="GET" action="{% url 'home' %}">
+      <button class="btn_search">
         <img src="{% static 'img/search-svgrepo-com.svg' %}" alt="">
-        <input type="text" placeholder="Search">
-      </form>
+      </button>
+      <input type="text" name="q" placeholder="Search users..." value="{{ search_query }}">
+    </form>
+  </div>
+  <div class="search_result">
+    <div class="search_result_flex">
+      {% if searched_profiles %}
+          {% for profile in searched_profiles %}
+            <a href="{% url 'profile' username=profile.user.username %}">
+              <div class="search_profile_result">
+                <div class="search_profile_result_name">
+                  <img src="{{profile.image.url}}" alt="">
+                  <h2>{{ profile.user.username }}</h2>
+                </div>
+                {% if request.user.profile in profile.subscribed_by.all %}
+                    <button><a href="{% url 'unsubscribe' profile.user.username %}"><b>Отписаться</b></a></button>
+                {% else %}
+                    <button><a href="{% url 'subscribe' profile.user.username %}"><b>Подписаться</b></a></button>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+      {% else %}
+          <h2>Таких нема</h2>
+      {% endif %}
     </div>
+  </div>
     <div class="trends">
       <div class="trends-me">
         <div class="trends-text">
           <h2>Trends for you</h2>
           <div class="trend-post">
-            <a href="">
-              <p>Trending in USA</p>
-              <p><b>USA</b></p>
-              <p>10K posts</p>
-            </a>
+            {% if trending_posts %}
+              {% for tag in trending_posts %}
+                  <div class="post_trends">
+                      <p>#{{ tag.name }}</p>
+  
+                      <a href="{% url 'communities' %}">
+                          <p><b>{{ tag.name }}</b></p>
+                      </a>
+  
+                      <p>Посты: {{ tag.post_count }}</p>
+                  </div>
+              {% endfor %}
+              
+            {% else %}
+                <p>No trending tags available.</p>
+            {% endif %}
           </div>
           <div class="show-more">
-            <a href="">
+            <a href="{% url 'communities' %}">
               <p>Show more</p>
             </a>
           </div>
@@ -139,76 +186,36 @@
       <div class="follow">
         <div class="follow-text">
           <h2>Who to follow</h2>
-          <div class="profile-follow">
-            <div class="picture-follow"></div>
-            <div class="name-nickname-follow">
-              <div class="name-follow">
-                <h4>HuyDildo</h4>
-              </div>
-              <div class="nickname-follow">
-                <p>@dildak</p>
-              </div>
-            </div>
-            <div class="button-follow">
-              <button><a href=""><p><b>Follow</b></p></a></button>
-            </div>
-          </div>
-          <div class="profile-follow">
-            <div class="picture-follow"></div>
-            <div class="name-nickname-follow">
-              <div class="name-follow">
-                <h4>HuyDildo</h4>
-              </div>
-              <div class="nickname-follow">
-                <p>@dildak</p>
-              </div>
-            </div>
-            <div class="button-follow">
-              <button><a href=""><p><b>Follow</b></p></a></button>
-            </div>
-          </div>
-          <div class="profile-follow">
-            <div class="picture-follow"></div>
-            <div class="name-nickname-follow">
-              <div class="name-follow">
-                <h4>HuyDildo</h4>
-              </div>
-              <div class="nickname-follow">
-                <p>@dildak</p>
-              </div>
-            </div>
-            <div class="button-follow">
-              <button><a href=""><p><b>Follow</b></p></a></button>
-            </div>
-          </div>
-          <div class="profile-follow">
-            <div class="picture-follow"></div>
-            <div class="name-nickname-follow">
-              <div class="name-follow">
-                <h4>HuyDildo</h4>
-              </div>
-              <div class="nickname-follow">
-                <p>@dildak</p>
-              </div>
-            </div>
-            <div class="button-follow">
-              <button><a href=""><p><b>Follow</b></p></a></button>
-            </div>
-          </div>
-          <div class="profile-follow">
-            <div class="picture-follow"></div>
-            <div class="name-nickname-follow">
-              <div class="name-follow">
-                <h4>HuyDildo</h4>
-              </div>
-              <div class="nickname-follow">
-                <p>@dildak</p>
-              </div>
-            </div>
-            <div class="button-follow">
-              <button><a href=""><p><b>Follow</b></p></a></button>
-            </div>
-          </div>
+          {% if follow_profiles %}
+          {% for profile in follow_profiles %}
+              <a href="{% url 'profile' profile.user.username %}">
+                  <div class="profile-follow">
+                      <div class="profile-follow-flex">
+                          <div class="picture-follow">
+                              <img src="{{ profile.image.url }}" alt="Avatar" />
+                          </div>
+                          <div class="name-nickname-follow">
+                              <div class="name-follow">
+                                  <h4>{{ profile.user.username }}</h4>
+                              </div>
+                              <div class="nickname-follow">
+                                  <p>@{{ profile.user.username }}</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="button-follow">
+                          {% if request.user.profile in profile.subscribed_by.all %}
+                              <button><a href="{% url 'unsubscribe' profile.user.username %}">Отписаться</a></button>
+                          {% else %}
+                              <button><a href="{% url 'subscribe' profile.user.username %}">Подписаться</a></button>
+                          {% endif %}
+                      </div>
+                  </div>
+              </a>
+          {% endfor %}
+        {% else %}
+            <p>Вы не подписаны ни на кого.</p>
+        {% endif %}
           <div class="show-more-follow">
             <a href="">
               <p>Show more</p>

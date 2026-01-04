@@ -3,7 +3,7 @@ from .forms import RegisterForm, PostForm, SearchForm, ProfileForm, MessageForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from .models import Post, Comment, Profile, Tag, Favorites, Chat, Message
+from .models import Post, Comment, Profile, Tag, Favorites, Chat, Message, PostRequest
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q, Sum, F
@@ -49,18 +49,31 @@ def home(request):
     else:
         form = PostForm()
 
+    # Основные данные
     posts = Post.objects.all()
     tags = Tag.objects.all()
+    trending_posts = get_trending_posts()
+    search_query = request.GET.get('q', '')
+    searched_profiles = search_profiles(search_query)
+    
+    if search_query:
+        searched_profiles = search_profiles(search_query)
+    else:
+        searched_profiles = []
 
+    if request.GET.get('profile_id'):
+        profile_id = request.GET.get('profile_id')
+        return redirect('profile', username=Profile.objects.get(id=profile_id).user.username)
+
+    # Получаем избранные посты текущего пользователя
     favorite_posts = []
+    follow_profiles = []
     if request.user.is_authenticated:
         profile, created = Profile.objects.get_or_create(user=request.user)
         favorite_posts = Favorites.objects.filter(user=profile).values_list('post', flat=True)
+        # Получаем профили, на которые подписан текущий пользователь
+        follow_profiles = profile.subscriptions.all()
 
-    # Get top 5 profiles by total post views
-    popular_profiles = Profile.objects.annotate(
-        total_views=Sum('posts__views')
-    ).order_by('-total_views')[:5]
 
     context = {
         'form': form,
@@ -68,14 +81,18 @@ def home(request):
         'tags': tags,
         'favorite_posts': favorite_posts,
         'author': profile,
-        'popular_profiles': popular_profiles,
+        'trending_posts': trending_posts,
+        'searched_profiles': searched_profiles,
+        'search_query': search_query,
+        'follow_profiles': follow_profiles,  # Добавлено
     }
     return render(request, 'home.html', context)
 
 
+
 def edit_post(request, slug):
     post = get_object_or_404(Post, slug=slug)
-
+    tags = Tag.objects.all()
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
@@ -84,7 +101,7 @@ def edit_post(request, slug):
     else:
         form = PostForm(instance=post)
     
-    return render(request, 'edit_post.html', {'form': form, 'post': post})
+    return render(request, 'edit_post.html', {'form': form, 'post': post, 'tags': tags})
 
     
     
@@ -152,16 +169,29 @@ def logout_user(request):
 
 def profile(request, username):
     profile_user = get_object_or_404(User, username=username)
-    profile = get_or_create_user_profile(profile_user)
+    profile = get_or_create_user_profile(profile_user)  # Профиль текущего пользователя
     image_profile = profile.image
     image_header_profile = profile.image_header
+    is_subscribed = profile in request.user.profile.subscriptions.all() if request.user.is_authenticated else False
     posts = Post.objects.filter(author=profile)
+    requested_posts = PostRequest.objects.filter(requester=profile_user)
+    trending_posts = get_trending_posts()
+    follower_count = profile.follower_count
+    following_count = profile.following_count
+    follow_profiles = profile.subscriptions.all()
+
     context = {
-        'profile_user': profile_user,
+        'profile_user': profile_user,  # Сам User
         'image_profile': image_profile,
         'image_header_profile': image_header_profile,
         'posts': posts,
-        'author': profile,
+        'author': profile,  # Профиль, а не User
+        'requested_posts': requested_posts,
+        'trending_posts': trending_posts,
+        'follower_count': follower_count,
+        'following_count': following_count,
+        'follow_profiles': follow_profiles,
+        'is_subscribed': is_subscribed,
     }
 
     return render(request, 'profile.html', context)
@@ -204,17 +234,18 @@ def like_post(request, slug):
 
 def post_detail(request, slug):
     post = get_object_or_404(Post, slug=slug)
+    profile = get_or_create_user_profile(request.user)
     
     # Использование F-экспрессии для увеличения счётчика просмотров
     post.views = F('views') + 1
     post.save(update_fields=['views'])
     post.refresh_from_db()
     
-    # Получение автора поста
-    author_profile = post.author
-    
     # Получение комментариев
     comments = post.comments.all()
+    follow_profiles = []
+    trending_posts = get_trending_posts()
+    follow_profiles = profile.subscriptions.all()
     
     context = {
         'post': post,
@@ -222,7 +253,9 @@ def post_detail(request, slug):
         'likes_count': post.likes.count(),
         'comments_count': post.comments_count,
         'views_count': post.views,
-        'author': author_profile,  # передача автора
+        'author': profile,  # передача автора
+        'trending_posts': trending_posts,
+        'follow_profiles': follow_profiles,
     }
     
     return render(request, 'post_detail.html', context)
@@ -232,34 +265,74 @@ def explore(request):
     profile = get_or_create_user_profile(request.user)
     form = SearchForm(request.GET)
     posts = Post.objects.none()  # Начинаем с пустого QuerySet
+    explored_profiles = Profile.objects.none()  # Инициализируем пустой QuerySet для профилей
+    query = ''
+    follow_profiles = []
+    
+    if request.user.is_authenticated:
+        # Получаем профили, на которые подписан текущий пользователь
+        follow_profiles = profile.subscriptions.all()
     
     if form.is_valid():
         query = form.cleaned_data.get('query')
         if query:
             posts = Post.objects.filter(
-                Q(content__icontains=query.lower()) | Q(tag__name__icontains=query.lower()) | Q(content__icontains=query.upper()) | Q(tag__name__icontains=query.upper())
+                Q(content__icontains=query.lower()) | 
+                Q(tag__name__icontains=query.lower()) | 
+                Q(content__icontains=query.upper()) | 
+                Q(tag__name__icontains=query.upper())
             )
+            explored_profiles = explore_profile(query)
+            
+    trending_posts = get_trending_posts()
 
     context = {
         'form': form,
         'posts': posts,
         'query': query,
         'author': profile,
+        'trending_posts': trending_posts,
+        'explored_profiles': explored_profiles,
+        'follow_profiles': follow_profiles,
     }
     return render(request, 'explore.html', context)
+
+
+def explore_profile(query):
+    if query:
+        profiles = Profile.objects.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query)
+        )
+        return profiles
+    return Profile.objects.none()
 
 
 @login_required
 def favorite_posts(request):
     profile = get_or_create_user_profile(request.user)
     favorites = Favorites.objects.filter(user=request.user.profile)
-    return render(request, 'favorites.html', {'favorites': favorites, 'author': profile})
+    trending_posts = get_trending_posts()
+    follow_profiles = []
+    follow_profiles = profile.subscriptions.all()
+    
+    context = {
+        'follow_profiles': follow_profiles,
+        'favorites': favorites, 
+        'author': profile, 
+        'trending_posts': trending_posts
+    }
+    
+    return render(request, 'favorites.html', context)
 
 
 def communities(request):
+    follow_profiles = []
     profile = get_or_create_user_profile(request.user)
     # Получаем все теги
     tags = Tag.objects.all()
+    trending_posts = get_trending_posts()
     
     # Получаем выбранный тег из параметров запроса
     selected_tag_slug = request.GET.get('tag')
@@ -272,8 +345,19 @@ def communities(request):
     else:
         # Если тег не выбран, показываем все посты
         posts = Post.objects.all()
+        
+    follow_profiles = profile.subscriptions.all()
     
-    return render(request, 'communities.html', {'tags': tags, 'posts': posts, 'selected_tag': selected_tag_slug, 'author': profile})
+    context = {
+        'follow_profiles': follow_profiles,
+        'tags': tags, 
+        'posts': posts, 
+        'selected_tag': selected_tag_slug, 
+        'author': profile, 
+        'trending_posts': trending_posts
+    }
+    
+    return render(request, 'communities.html', context)
 
 
 @login_required
@@ -304,28 +388,26 @@ def update_profile(request):
 
 
 def chat_list(request, chat_id=None):
-    # Получаем все чаты текущего пользователя
+    # Получаем профиль текущего пользователя
     profile = get_or_create_user_profile(request.user)
-    chats = Chat.objects.filter(profiles=request.user.profile)
+    chats = Chat.objects.filter(profiles=profile)
     
-    # Если указан chat_id, получаем выбранный чат
+    # Инициализируем переменные для выбранного чата и профиля собеседника
     selected_chat = None
     messages = []
-    other_profile_username = ''
+    other_profile = None
 
     if chat_id:
-        selected_chat = get_object_or_404(Chat, id=chat_id, profiles=request.user.profile)
+        selected_chat = get_object_or_404(Chat, id=chat_id, profiles=profile)
         messages = selected_chat.messages.all()
-        other_profile = selected_chat.profiles.exclude(id=request.user.profile.id).first()
-        if other_profile:
-            other_profile_username = other_profile.user.username
+        other_profile = selected_chat.profiles.exclude(id=profile.id).first()
 
-    # Передаем все чаты и сообщения выбранного чата в контексте
+    # Передаем все чаты, сообщения и профиль другого пользователя в контекст
     context = {
         'chats': chats,
         'selected_chat': selected_chat,
         'messages': messages,
-        'other_profile_username': other_profile_username,
+        'other_profile': other_profile,  # Передаем объект профиля
         'author': profile
     }
     return render(request, 'chat.html', context)
@@ -334,23 +416,43 @@ def chat_list(request, chat_id=None):
 @login_required
 def create_chat(request):
     if request.method == 'POST':
+        recipient_id = request.POST.get('recipient_id')
+        try:
+            recipient_profile = Profile.objects.get(id=recipient_id)
+        except Profile.DoesNotExist:
+            return redirect('chat_list')
+
+        # Создание нового чата
+        chat = Chat.objects.create()
+        chat.profiles.add(request.user.profile, recipient_profile)
+        chat.save()
+
+        return redirect('chat_list_with_id', chat_id=chat.id)
+
+    return redirect('chat_list')
+
+
+@login_required
+def search_chat(request):
+    if request.method == 'POST':
         recipient_username = request.POST.get('recipient_username')
         try:
             recipient_profile = Profile.objects.get(user__username=recipient_username)
         except Profile.DoesNotExist:
-            # Если пользователь не найден, можно вернуть ошибку или сообщение
-            return redirect('chat_list')
+            # Если пользователь не найден, возвращаем сообщение об ошибке
+            return render(request, 'chat.html', {'error': 'Пользователь не найден.'})
 
         # Проверяем, существует ли уже чат с этим пользователем
         chat = Chat.objects.filter(profiles=request.user.profile).filter(profiles=recipient_profile).first()
 
-        if not chat:
-            # Если такого чата нет, создаем новый чат
-            chat = Chat.objects.create()
-            chat.profiles.add(request.user.profile, recipient_profile)
+        context = {
+            'recipient_profile': recipient_profile,
+            'chat': chat,
+        }
+        return render(request, 'chat.html', context)
 
-        # Перенаправляем на этот чат
-        return redirect('chat_list_with_id', chat_id=chat.id)
+    return redirect('chat_list')
+
 
 @login_required
 def send_message(request, chat_id):
@@ -391,3 +493,102 @@ def unsubscribe(request, username):
         messages.success(request, f'Вы отписались от {profile_to_unsubscribe.user.username}')
         
     return redirect(request.META.get('HTTP_REFERER', 'profile_url'))
+
+
+@login_required
+def request_post(request, post_slug):
+    post = get_object_or_404(Post, slug=post_slug)
+    profile = get_or_create_user_profile(request.user)
+
+    # Проверка: пользователь не может реквестить свой собственный пост
+    if post.author.user == request.user:
+        messages.error(request, "You cannot request your own post.")
+        return redirect('profile', username=request.user.username)
+
+    # Проверка на существующий запрос
+    existing_request = PostRequest.objects.filter(post=post, requester=request.user).first()
+
+    if existing_request:
+        # Удаление существующего запроса
+        existing_request.delete()
+        messages.success(request, "Request removed.")
+    else:
+        # Создание нового запроса
+        PostRequest.objects.create(post=post, requester=request.user)
+        messages.success(request, "Post requested.")
+
+    return redirect('profile', username=request.user.username)
+
+
+def get_trending_posts():
+    # Возвращает 5 постов с наибольшим количеством просмотров
+    return Tag.objects.annotate(post_count=Count('post')).order_by('-post_count')[:5]
+
+
+def search_users(request):
+    query = request.GET.get('query', '')  # Получаем поисковый запрос из GET параметра
+    users = User.objects.filter(
+        Q(username__icontains=query)
+    ) if query else User.objects.none()  # Если есть запрос, выполняем фильтрацию
+
+    context = {
+        'users': users,
+        'query': query,
+    }
+    return render(request, 'home.html', context)
+
+
+def search_profiles(query=None):
+    profiles = Profile.objects.all()
+
+    if query:
+        profiles = profiles.filter(user__username__icontains=query)
+
+    # Ограничиваем количество выводимых профилей до 5
+    return profiles
+
+
+def following_profiles(request):
+    profile = get_object_or_404(Profile, user=request.user)
+    following_profiles = profile.subscriptions.all()
+
+    # Проверяем подписки
+    follow_data = []
+    for prof in following_profiles:
+        follow_data.append({
+            'profile': prof,
+            'is_subscribed': request.user.profile in prof.subscribed_by.all()  # Проверяем, подписан ли текущий пользователь
+        })
+
+    context = {
+        'follow_data': follow_data,  # Передаем данные о профилях и статусе подписки
+    }
+    return context
+
+
+def followers(request, query=None):
+    user_profile = get_or_create_user_profile(request.user)
+    profiles = user_profile.subscribed_by.all()
+    profile = get_or_create_user_profile(request.user)
+
+    if query:
+        profiles = profiles.filter(user__username__icontains=query)
+
+    return render(request, 'followers.html', {'profiles': profiles, 'author': profile})
+
+
+def following(request, query=None):
+    user_profile = get_or_create_user_profile(request.user)
+    profiles = user_profile.subscriptions.all()
+    profile = get_or_create_user_profile(request.user)
+
+    if query:
+        profiles = profiles.filter(user__username__icontains=query)
+
+    return render(request, 'following.html', {'profiles': profiles, 'author': profile})
+
+
+def get_followers_user(request, user):
+    profile = Profile.objects.get(user=request.user)
+    followings = profile.subscribed_by.all()
+    return render

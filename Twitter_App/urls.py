@@ -20,8 +20,12 @@ urlpatterns = [
     path('chats/', views.chat_list, name='chat_list'),  # Отображение всех чатов
     path('chats/<int:chat_id>/', views.chat_list, name='chat_list_with_id'),
     path('chats/create/', views.create_chat, name='create_chat'),
+    path('chats/search_chat/', views.search_chat, name='search_chat'),
     path('chats/<int:chat_id>/send/', views.send_message, name='send_message'),
     path('subscribe/<str:username>/', views.subscribe, name='subscribe'),
     path('unsubscribe/<str:username>/', views.unsubscribe, name='unsubscribe'),
     path('profile/<str:username>/', views.profile, name='profile'),
+    path('request_post/<slug:post_slug>/', views.request_post, name='request_post'),
+    path('followers/', views.followers, name='followers'),
+    path('following/', views.following, name='following'),
 ]

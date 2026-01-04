@@ -82,7 +82,7 @@
                         <div class="profile">
                             <div class="picture">
                                 {% if author.image %}
-                                    <img src="{{ author.image.url }}" alt="">
+                                    <img src="{{ request.user.profile.image.url }}" alt="">
                                 {% else %}
                                     <img src="/media/profile_images/default.webp" alt="Default Avatar">
                                 {% endif %}
@@ -213,6 +213,10 @@
             document.getElementById('fileInput').value = "";
         }
     </script>
+
+
+    
+
     <script>
         function update_input_image(e, id) {
             const file = e.target.files[0];

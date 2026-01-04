@@ -7,61 +7,125 @@
 {% endblock title %}
 
 {% block content %}
-<div class="chat-container">
-  <!-- Левая панель: список чатов -->
-  <div class="chat-list">
-      <h2>Chats</h2>
-      <ul>
-          {% for chat in chats %}
-              <li>
-                  <a href="?chat_id={{ chat.id }}">
-                      Chat with 
-                      {% for profile in chat.profiles.all %}
-                          {% if profile != request.user.profile %}
-                              {{ profile.user.username }}
-                          {% endif %}
-                      {% endfor %}
-                  </a>
-              </li>
-          {% empty %}
-              <li>No chats available</li>
-          {% endfor %}
-      </ul>
 
-      <!-- Форма для создания нового чата -->
-      <form method="POST" action="{% url 'create_chat' %}">
-          {% csrf_token %}
-          <input type="text" name="recipient_username" placeholder="Enter username to chat with" required>
-          <button type="submit">Create Chat</button>
-      </form>
+<main class="content-messages">
+  <div class="messages">
+    <div class="message-flex">
+      <h4>Messages</h4>
+    </div>
   </div>
 
-  <!-- Правая панель: содержимое чата -->
-  <div class="chat-content">
-      {% if selected_chat %}
-          <h3>Chat with {{ other_profile_username }}</h3>
-          
-          <!-- Отображение сообщений -->
-          <div class="messages">
-              {% for message in messages %}
-                  <div class="message {% if message.sender == request.user.profile %}sent{% else %}received{% endif %}">
-                        <h2>{{ message.sender.user.username }}</h2>
-                        <p>{{ message.text }}</p>
-                        <span>{{ message.created_at }}</span>
-                  </div>
-              {% endfor %}
+  <!-- Поле для поиска чатов -->
+  <div class="search">
+    <form action="{% url 'search_chat' %}" method="POST" aria-label="search">
+      {% csrf_token %}
+      <button type="submit">
+        <img src="{% static 'img/search-svgrepo-com.svg' %}" alt="">
+      </button>
+      <input type="text" name="recipient_username" placeholder="Search">
+    </form>
+  </div>
+
+  <!-- Список чатов -->
+  {% if recipient_profile %}
+    <div>
+      {% if chat %}
+        <a href="{% url 'chat_list_with_id' chat_id=chat.id %}">
+          <div class="chat">
+            <div class="chat-flex">
+              <img src="{{ recipient_profile.image.url }}" alt="">
+              <div class="chat-info">
+                <div class="user-name">
+                  <p><b>{{ recipient_profile.user.username }}</b></p>
+                  <p class="p">@{{ recipient_profile.user.username }}</p>
+                </div>
+                <div class="last-message">
+
+                  <p>Я ему сосала дрочила, он мне..</p>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <!-- Форма отправки сообщения -->
-          <form method="POST" action="{% url 'send_message' selected_chat.id %}">
-              {% csrf_token %}
-              <input type="text" name="text" placeholder="Enter your message..." required>
-              <button type="submit">Send</button>
-          </form>
+        </a>
       {% else %}
-          <p>Select a chat to start messaging</p>
+        <form action="{% url 'create_chat' %}" method="POST" class="create_chat_profile">
+          {% csrf_token %}
+          <input type="hidden" name="recipient_id" value="{{ recipient_profile.id }}">
+          <button type="submit"><b>Создать чат с {{ recipient_profile.user.username }}</b></button>
+        </form>
       {% endif %}
-  </div>
+    </div>
+  {% endif %}
+
+  <!-- Отображение всех чатов -->
+  {% for chat in chats %}
+    {% for profile in chat.profiles.all %}
+      {% if profile != request.user.profile %}
+        <a href="{% url 'chat_list_with_id' chat_id=chat.id %}">
+          <div class="chat">
+            <div class="chat-flex">
+              <img src="{{ profile.image.url }}" alt="">
+              <div class="chat-info">
+                <div class="user-name">
+                  <p><b>{{ profile.user.username }}</b></p>
+                  <p class="p">@{{ profile.user.username }}</p>
+                </div>
+                <div class="last-message">
+                  {% for messages in chat.messages.all %}
+                  {% if forloop.last %}
+                  <p>{{messages.text}}</p>
+                  {% endif %}
+                  {% empty %}
+                  <p>Нет сообщений</p>
+                  {% endfor %}
+                  
+                </div>
+              </div>
+            </div>
+          </div>
+        </a>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</main>  
+
+
+<!-- Правая часть с отображением выбранного чата -->
+<div class="trending-messages">
+  {% if selected_chat %}
+    <div class="name-account">
+      <div class="name-account-flex">
+        <a href="">
+          <img src="{{ other_profile.image.url }}" alt="">
+        </a>
+        <h3><b>{{ other_profile.user.username }}</b></h3>
+      </div>
+    </div>
+    
+    <div class="chat-content">
+      <div class="chat_content_flex">
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message {% if message.sender == request.user.profile %}sent{% else %}received{% endif %}">
+              <h2>{{ message.sender.user.username }}</h2>
+              <p>{{ message.text }}</p>
+              <span>{{ message.created_at }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Отображение сообщений -->
+  
+        <!-- Форма отправки сообщения -->
+        <form method="POST" action="{% url 'send_message' selected_chat.id %}" class="message_post_create">
+          {% csrf_token %}
+          <input type="text" name="text" placeholder="Enter your message..." required>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+  {% endif %}
 </div>
 
 

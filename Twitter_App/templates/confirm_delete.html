@@ -1,17 +1,31 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}
 {{post.content}}
 {% endblock %}
 
 {% block content %}
 
-<h2 class="check">Вы уверены, что хотите удалить пост "{{ post.content }}"?</h2>
-
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Удалить</button>
-    <a href="{% url 'home' %}">Отмена</a>
-</form>
+<main class="content-post">
+    <div class="create-post">
+      <div class="communities-post_detail_confirm-delete">
+        <div class="post_detail-flex_confirm-delete">
+            <h4>Confirm delete</h4>
+        </div>
+    </div>
+    <div class="confirm_delete">
+        <div class="confirm_delete_flex">
+            <h2 class="check">Вы уверены, что хотите удалить пост "{{ post.content }}"?</h2>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit"><b>Удалить</b></button>
+                <a href="{% url 'home' %}">Отмена</a>
+            </form>
+        </div>
+    </div>
+</main>
 
 {% endblock %}

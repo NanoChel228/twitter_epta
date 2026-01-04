@@ -6,11 +6,37 @@
 
 {% block content %}
 
-  <h2>Изменить пост</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-  </form>
+  <main class="content-post">
+    <div class="create-post">
+      <div class="communities-post_detail_confirm-delete">
+        <div class="post_detail-flex_confirm-delete">
+            <h4>Изменить пост</h4>
+        </div>
+    </div>
+    <div class="confirm_edit">
+        <div class="confirm_edit_flex">
+            <h2 class="check">Изменить пост "{{ post.content }}"</h2>
+            
+            <form method="post" enctype="multipart/form-data" class="edit_post_field">
+              {% csrf_token %}
+              <div class="content_edit">
+                <textarea name="content" id="" maxlength="280" placeholder=""></textarea>
+              </div>
+              <div class="edit_image_tag">
+                <input type="file" name="image">
+                <select name="tag" id="tag" class="styled-select">
+                  <option value="" disabled selected>Выберите тег</option>
+                  {% for tag in tags %}
+                    <option value="{{ tag.id }}">{{ tag.name }}</option>
+                  {% endfor %}
+                </select>
+      
+                <input type="text" name="new_tag" placeholder="Или введите новый тег">
+              </div>
+              <button type="submit">Сохранить изменения</button>
+            </form>
+        </div>
+    </div>
+  </main>
 
 {% endblock %}

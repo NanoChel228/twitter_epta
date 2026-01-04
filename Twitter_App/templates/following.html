@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+Профиль
+{% endblock title %}
+
+{% block content %}
+
+<main class="content-post">
+  <div class="create-post">
+    <div class="profile-profile">
+      <div class="profile-flex">
+        <a href="">
+          <img src="./assets/img/left-arrow-svgrepo-com.svg" alt="">
+        </a>
+        <div class="name-profile">
+          <h4>{{ user.username }}</h4>
+          <p>#{{ user.username }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="explore_result">
+      <h2>Профили</h2>
+        {% if profiles %}
+            {% for profile in profiles %}
+                <div class="search_profile_result_name_explore_flex">
+                <div class="search_profile_result_explore">
+                    <div class="search_profile_result_name_explore">
+                    <a href="{% url 'profile' username=profile.user.username %}">
+                        <img src="{{ profile.image.url }}" alt="Profile Image">
+                        <h2>{{ profile.user.username }}</h2>
+                    </a>
+                    </div>
+                    <div>
+                    {% if request.user.profile in profile.subscribers.all %}
+                        <form action="{% url 'unsubscribe' profile.user.username %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"><b>Отписаться</b></button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'subscribe' profile.user.username %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit"><b>Подписаться</b></button>
+                        </form>
+                    {% endif %}
+                    </div>
+                </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Вы не подписаны ни на кого</p>
+        {% endif %}
+    </div>
+  </div>
+</main>
+<div class="trending">
+  <div class="search">
+    <form action="" aria-label="search">
+      <img src="./assets/img/search-svgrepo-com.svg" alt="">
+      <input type="text" placeholder="Search">
+    </form>
+  </div>
+  <div class="trends">
+    <div class="trends-me">
+      <div class="trends-text">
+        <h2>Trends for you</h2>
+        <div class="trend-post">
+          <a href="">
+            <p>Trending in USA</p>
+            <p><b>USA</b></p>
+            <p>10K posts</p>
+          </a>
+        </div>
+        <div class="show-more">
+          <a href="">
+            <p>Show more</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="follow-back">
+    <div class="follow">
+      <div class="follow-text">
+        <h2>Who to follow</h2>
+        {% if follow_profiles %}
+          {% for profile in follow_profiles %}
+              <a href="{% url 'profile' profile.user.username %}">
+                  <div class="profile-follow">
+                      <div class="profile-follow-flex">
+                          <div class="picture-follow">
+                              <img src="{{ profile.image.url }}" alt="Avatar" />
+                          </div>
+                          <div class="name-nickname-follow">
+                              <div class="name-follow">
+                                  <h4>{{ profile.user.username }}</h4>
+                              </div>
+                              <div class="nickname-follow">
+                                  <p>@{{ profile.user.username }}</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="button-follow">
+                          {% if request.user.profile in profile.subscribed_by.all %}
+                              <button><a href="{% url 'unsubscribe' profile.user.username %}">Отписаться</a></button>
+                          {% else %}
+                              <button><a href="{% url 'subscribe' profile.user.username %}">Подписаться</a></button>
+                          {% endif %}
+                      </div>
+                  </div>
+              </a>
+          {% endfor %}
+        {% else %}
+            <p>Вы не подписаны ни на кого.</p>
+        {% endif %}
+        <div class="show-more-follow">
+          <a href="">
+            <p>Show more</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/profile.js' %}"></script>
+
+
+
+{% endblock %}
+

@@ -41,7 +41,19 @@
         </div>
         <div class="edit-profile">
           <div class="edit-profile-end">
-            <button class="open-modal" data-modal="modal2" onclick="model_open_profile()"><p><b>Edit profile</b></p></button>
+            {% if request.user.username == profile_user.username %}
+                <button class="open-modal" data-modal="modal2" onclick="model_open_profile()">
+                    <p><b>Edit profile</b></p>
+                </button>
+            {% else %}
+                <div class="button-follow_profile">
+                    {% if is_subscribed %}
+                        <button><a href="{% url 'unsubscribe' profile_user.username %}">Отписаться</a></button>
+                    {% else %}
+                        <button><a href="{% url 'subscribe' profile_user.username %}">Подписаться</a></button>
+                    {% endif %}
+                </div>
+            {% endif %}
           </div>
         </div>
       </div>  
@@ -62,6 +74,18 @@
         <div class="joined">
             <img src="{% static 'img/calendar-days-svgrepo-com.svg' %}" alt="">
             <p>{{ profile_user.profile.created_at|date:'d-F-Y' }}</p>
+        </div>
+        <div class="followers_following">
+          <a href="{% url 'following' %}">
+            <div class="following">
+              <p><b>{{ following_count }}</b> Following</p>
+            </div>
+          </a>
+          <a href="{% url 'followers' %}">
+            <div class="followers">
+              <p><b>{{ follower_count }}</b> Followers</p>
+            </div>
+          </a>
         </div>
       </div>
 
@@ -146,29 +170,166 @@
 
       {% else %}
 
-      <p>Post slug is missing</p>
-
+      
       {% endif %}
+      {% endfor %}
+      <h2 class="h2_request">Requested Posts</h2>
+      <hr>  
+      
+      {% for request in requested_posts %}
+        <a href="{{ request.post.get_link }}">
+            <div class="tweet-wrap">
+                <div class="tweet-header">
+                    <img src="{{ request.post.author.image.url }}" alt="" class="avator">
+                    <div class="tweet-header-info">
+                        {{ request.post.author }} <span>@{{ request.post.author.username }}</span>
+                        <span>{{ request.post.created_at|date:'d-F-Y' }}</span>
+                        {% if request.post.tag %}
+                            <p>#{{ request.post.tag.name }}</p>
+                        {% endif %}
+                        <p>{{ request.post.content }}</p>
+                    </div>
+                </div>
+                <div class="tweet-img-wrap">
+                    {% if request.post.image %}
+                        <img src="{{ request.post.image.url }}" alt="Post Image">
+                    {% endif %}
+                </div>
+                <div class="tweet-info-counts">
+                    <div class="comments">
+                        <svg class="feather feather-message-circle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <div class="comment-count">{{ request.post.comments_count }}</div>
+                    </div>
+
+                    <div class="comments">
+                        {% if request.post.author.user != request.user %}
+                        <form action="{% url 'request_post' request.post.slug %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="request_button">
+                              {% if request.post in requested_posts %}
+                                  <svg class="feather feather-send" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                  </svg>
+                                  Remove Request
+                              {% else %}
+                                  <svg class="feather feather-send" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                  </svg>
+                                  Request
+                              {% endif %}
+                          </button>
+                        </form>
+                        {% endif %}
+                    </div>
+
+                    <!-- Лайки -->
+                    <form method="post" action="{% url 'like_post' request.post.slug %}" class="like-form">
+                        {% csrf_token %}
+                        <div class="likes" data-post-slug="{{ request.post.slug }}">
+                            <button type="submit" class="like-button">
+                                {% if request.user.profile in request.post.likes.all %}
+                                    <svg id="like-icon-{{ request.post.slug }}" class="feather feather-heart liked" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#FF0000" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span>Unlike</span>
+                                {% else %}
+                                    <svg id="like-icon-{{ request.post.slug }}" class="feather feather-heart" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                    <span>Like</span>
+                                {% endif %}
+                            </button>
+                            <div id="likes-count-{{ request.post.slug }}" class="likes-count">
+                                {{ request.post.likes.count }}
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="message">
+                        <svg class="feather feather-send" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <div class="likes-count">
+                            {{ request.post.views }}
+                        </div>
+                    </div>
+
+                    <form method="post" action="{% url 'home' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="post_slug" value="{{ request.post.slug }}">
+                        {% if request.post.id in favorite_posts %}
+                            <button type="submit" name="favorite">Удалить из избранного</button>
+                        {% else %}
+                            <button type="submit" name="favorite">Добавить в избранное</button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </a>
+    {% empty %}
+        <li>No requested posts yet.</li>
     {% endfor %}
+
   </div>
 </main>
 <div class="trending">
   <div class="search">
-    <form action="" aria-label="search">
-      <img src="./assets/img/search-svgrepo-com.svg" alt="">
-      <input type="text" placeholder="Search">
+    <form method="GET" action="{% url 'home' %}">
+      <button class="btn_search">
+        <img src="{% static 'img/search-svgrepo-com.svg' %}" alt="">
+      </button>
+      <input type="text" name="q" placeholder="Search users..." value="{{ search_query }}">
     </form>
+  </div>
+  <div class="search_result">
+    <div class="search_result_flex">
+      {% if searched_profiles %}
+          {% for profile in searched_profiles %}
+            <a href="{% url 'profile' username=profile.user.username %}">
+              <div class="search_profile_result">
+                <div class="search_profile_result_name">
+                  <img src="{{profile.image.url}}" alt="">
+                  <h2>{{ profile.user.username }}</h2>
+                </div>
+                {% if request.user.profile.username in profile.subscribed_by.all %}
+                  <button><a href="{% url 'unsubscribe' profile.user.username %}">Отписаться</a></button>
+                {% else %}
+                  <button><a href="{% url 'subscribe' profile.user.username %}">Подписаться</a></button>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+      {% else %}
+          <h2>Таких нема</h2>
+      {% endif %}
+    </div>
   </div>
   <div class="trends">
     <div class="trends-me">
       <div class="trends-text">
         <h2>Trends for you</h2>
         <div class="trend-post">
-          <a href="">
-            <p>Trending in USA</p>
-            <p><b>USA</b></p>
-            <p>10K posts</p>
-          </a>
+          {% if trending_posts %}
+            {% for tag in trending_posts %}
+                <div class="post_trends">
+                    <p>#{{ tag.name }}</p>
+
+                    <a href="{% url 'communities' %}">
+                        <p><b>{{ tag.name }}</b></p>
+                    </a>
+
+                    <p>Посты: {{ tag.post_count }}</p>
+                </div>
+            {% endfor %}
+            
+          {% else %}
+              <p>No trending tags available.</p>
+          {% endif %}
         </div>
         <div class="show-more">
           <a href="">
@@ -182,76 +343,36 @@
     <div class="follow">
       <div class="follow-text">
         <h2>Who to follow</h2>
-        <div class="profile-follow">
-          <div class="picture-follow"></div>
-          <div class="name-nickname-follow">
-            <div class="name-follow">
-              <h4>HuyDildo</h4>
-            </div>
-            <div class="nickname-follow">
-              <p>@dildak</p>
-            </div>
-          </div>
-          <div class="button-follow">
-            <button><a href=""><p><b>Follow</b></p></a></button>
-          </div>
-        </div>
-        <div class="profile-follow">
-          <div class="picture-follow"></div>
-          <div class="name-nickname-follow">
-            <div class="name-follow">
-              <h4>HuyDildo</h4>
-            </div>
-            <div class="nickname-follow">
-              <p>@dildak</p>
-            </div>
-          </div>
-          <div class="button-follow">
-            <button><a href=""><p><b>Follow</b></p></a></button>
-          </div>
-        </div>
-        <div class="profile-follow">
-          <div class="picture-follow"></div>
-          <div class="name-nickname-follow">
-            <div class="name-follow">
-              <h4>HuyDildo</h4>
-            </div>
-            <div class="nickname-follow">
-              <p>@dildak</p>
-            </div>
-          </div>
-          <div class="button-follow">
-            <button><a href=""><p><b>Follow</b></p></a></button>
-          </div>
-        </div>
-        <div class="profile-follow">
-          <div class="picture-follow"></div>
-          <div class="name-nickname-follow">
-            <div class="name-follow">
-              <h4>HuyDildo</h4>
-            </div>
-            <div class="nickname-follow">
-              <p>@dildak</p>
-            </div>
-          </div>
-          <div class="button-follow">
-            <button><a href=""><p><b>Follow</b></p></a></button>
-          </div>
-        </div>
-        <div class="profile-follow">
-          <div class="picture-follow"></div>
-          <div class="name-nickname-follow">
-            <div class="name-follow">
-              <h4>HuyDildo</h4>
-            </div>
-            <div class="nickname-follow">
-              <p>@dildak</p>
-            </div>
-          </div>
-          <div class="button-follow">
-            <button><a href=""><p><b>Follow</b></p></a></button>
-          </div>
-        </div>
+        {% if follow_profiles %}
+          {% for profile in follow_profiles %}
+              <a href="{% url 'profile' profile.user.username %}">
+                  <div class="profile-follow">
+                      <div class="profile-follow-flex">
+                          <div class="picture-follow">
+                              <img src="{{ profile.image.url }}" alt="Avatar" />
+                          </div>
+                          <div class="name-nickname-follow">
+                              <div class="name-follow">
+                                  <h4>{{ profile.user.username }}</h4>
+                              </div>
+                              <div class="nickname-follow">
+                                  <p>@{{ profile.user.username }}</p>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="button-follow">
+                          {% if request.user.profile in profile.subscribed_by.all %}
+                              <button><a href="{% url 'unsubscribe' profile.user.username %}">Отписаться</a></button>
+                          {% else %}
+                              <button><a href="{% url 'subscribe' profile.user.username %}">Подписаться</a></button>
+                          {% endif %}
+                      </div>
+                  </div>
+              </a>
+          {% endfor %}
+        {% else %}
+            <p>Вы не подписаны ни на кого.</p>
+        {% endif %}
         <div class="show-more-follow">
           <a href="">
             <p>Show more</p>
